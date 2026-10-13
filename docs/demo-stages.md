@@ -43,6 +43,7 @@ The goal is the same questions, now answered correctly from our database, with t
 - Tools are Java methods (`@Tool`) that call the existing repositories. They should cover finding talks (by day, time, track, room or text), getting a talk, finding speakers and getting a speaker. Return compact, structured results.
 - All tools are **read-only**. Don't add any tool, endpoint or table that changes data.
 - Return the tool calls with the reply (tool name and arguments). Show them in the chat as small, expandable lines above the answer.
+- Log every tool call in the backend application log at `INFO`: the tool name, its arguments and a short summary of the result (for example how many talks were found).
 - System prompt: tell the agent to answer conference questions using the tools.
 
 ## Stage 3: guardrails
