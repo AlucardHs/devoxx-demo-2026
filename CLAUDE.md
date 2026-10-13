@@ -4,6 +4,10 @@ Demo project for an internal company talk. It shows an AI agent answering questi
 
 The demo is built up in stages, one stage per branch. `main` is the plain app with no AI: a schedule browser. Later branches add a chat box in the UI and an agent in the backend that uses tools to query the database. Keep each stage small and easy to follow, because the code will be shown on screen.
 
+The stages, the tech choices (LangChain4j + Claude Haiku) and the rules for working during the live demo are in this imported file. Follow it whenever you're asked to add AI or agent features:
+
+@docs/demo-stages.md
+
 ## Layout
 
 - `backend/`: Micronaut 5 + Java 25 REST API on PostgreSQL. See `backend/CLAUDE.md`.
