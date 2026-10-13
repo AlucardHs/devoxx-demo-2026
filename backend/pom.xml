@@ -85,6 +85,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.micronaut.langchain4j</groupId>
+      <artifactId>micronaut-langchain4j-anthropic</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>runtime</scope>
@@ -105,7 +111,7 @@
     <dependency>
       <groupId>io.micronaut</groupId>
       <artifactId>micronaut-http-client</artifactId>
-      <scope>test</scope>
+      <scope>compile</scope>
     </dependency>
 
     <dependency>
@@ -201,6 +207,11 @@
                   <artifactId>micronaut-inject</artifactId>
                 </exclusion>
               </exclusions>
+            </path>
+            <path>
+              <groupId>io.micronaut.langchain4j</groupId>
+              <artifactId>micronaut-langchain4j-processor</artifactId>
+              <version>${micronaut.langchain4j.version}</version>
             </path>
             <path>
               <groupId>io.micronaut</groupId>

@@ -37,3 +37,19 @@ async function get<T>(path: string): Promise<T> {
 
 export const fetchTalks = () => get<Talk[]>('/api/talks')
 export const fetchSpeakers = () => get<Speaker[]>('/api/speakers')
+
+export interface ChatReply {
+  reply: string
+}
+
+export async function sendChatMessage(conversationId: string, message: string): Promise<ChatReply> {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conversationId, message }),
+  })
+  if (!response.ok) {
+    throw new Error(`The assistant is unavailable (HTTP ${response.status})`)
+  }
+  return response.json() as Promise<ChatReply>
+}
