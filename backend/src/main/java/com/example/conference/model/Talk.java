@@ -1,7 +1,5 @@
-package com.example.conference.talk;
+package com.example.conference.model;
 
-import com.example.conference.room.Room;
-import com.example.conference.speaker.Speaker;
 import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.sql.JoinColumn;
 import io.micronaut.data.annotation.sql.JoinTable;

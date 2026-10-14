@@ -1,4 +1,4 @@
-package com.example.conference.speaker;
+package com.example.conference.model;
 
 import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.MappedEntity;

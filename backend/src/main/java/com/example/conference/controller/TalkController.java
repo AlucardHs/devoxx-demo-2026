@@ -1,5 +1,7 @@
-package com.example.conference.talk;
+package com.example.conference.controller;
 
+import com.example.conference.model.Talk;
+import com.example.conference.repository.TalkRepository;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 

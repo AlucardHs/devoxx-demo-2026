@@ -1,8 +1,8 @@
 package com.example.conference;
 
-import com.example.conference.room.Room;
-import com.example.conference.speaker.Speaker;
-import com.example.conference.talk.Talk;
+import com.example.conference.model.Room;
+import com.example.conference.model.Speaker;
+import com.example.conference.model.Talk;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;

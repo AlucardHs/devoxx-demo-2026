@@ -1,5 +1,7 @@
-package com.example.conference.speaker;
+package com.example.conference.controller;
 
+import com.example.conference.model.Speaker;
+import com.example.conference.repository.SpeakerRepository;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 

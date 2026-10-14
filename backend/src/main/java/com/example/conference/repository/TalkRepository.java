@@ -1,5 +1,6 @@
-package com.example.conference.talk;
+package com.example.conference.repository;
 
+import com.example.conference.model.Talk;
 import io.micronaut.data.annotation.Join;
 import io.micronaut.data.jdbc.annotation.JdbcRepository;
 import io.micronaut.data.model.query.builder.sql.Dialect;

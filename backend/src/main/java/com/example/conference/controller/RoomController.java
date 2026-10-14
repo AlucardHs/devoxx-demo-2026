@@ -1,5 +1,7 @@
-package com.example.conference.room;
+package com.example.conference.controller;
 
+import com.example.conference.model.Room;
+import com.example.conference.repository.RoomRepository;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 
