@@ -11,7 +11,7 @@ Look at the code, not the wording of the request or the branch name:
 | What the directory has now                      | What to build next        |
 |-------------------------------------------------|---------------------------|
 | Only this file and the CSV                      | The schedule app (no AI)  |
-| The schedule app, with no AI code               | Stage 1                   |
+| The schedule app and chat UI, no AI in backend  | Stage 1                   |
 | A chat agent with no tools                      | Stage 2                   |
 | An agent with tools, but no guardrails          | Stage 3                   |
 
@@ -27,7 +27,7 @@ Build **only** the next step. Don't add anything from a later stage, even if the
 
 ## The schedule app (built first)
 
-A small, read-only web app for browsing the Bytecode Bay 2026 programme: a Micronaut backend serving the conference data from PostgreSQL, and a React frontend showing the schedule and the speakers.
+A small, read-only web app for browsing the Bytecode Bay 2026 programme: a Micronaut backend serving the conference data from PostgreSQL, and a React frontend showing the schedule and the speakers. The frontend also includes the complete chat UI for the assistant from the start; it calls `POST /api/chat`, which doesn't exist until stage 1, so until then every question shows an error.
 
 ### Layout
 
@@ -127,10 +127,10 @@ npm create vite@latest frontend -- --template react-ts --no-interactive
 - Page title: "Bytecode Bay 2026".
 
 Structure:
-- `src/api.ts`: TypeScript types mirroring the backend JSON (`Room`, `Speaker`, `Talk`), plus `fetchTalks` and `fetchSpeakers`.
+- `src/api.ts`: TypeScript types mirroring the backend JSON (`Room`, `Speaker`, `Talk`, `ToolCall`, `ChatResponse`), plus `fetchTalks`, `fetchSpeakers` and `sendChatMessage`.
 - `src/format.ts`: date helpers, `initials(name)`, and a map from track to CSS class. The API returns local times without a zone (`2026-11-18T10:00:00`), so take the day and time by slicing the string. Don't convert with `Date`, which would shift the times to the viewer's zone.
 - `src/App.tsx`: loads all talks and speakers once, switches between the two views, and opens the detail modal.
-- `src/components/`: one component per file: `Schedule`, `TalkCard`, `Speakers`, `TalkDetails`, `SpeakerDetails`, `Modal`.
+- `src/components/`: one component per file: `Schedule`, `TalkCard`, `Speakers`, `TalkDetails`, `SpeakerDetails`, `Modal`, `ChatPanel`.
 - `src/index.css`: all styles.
 
 What it shows:
@@ -138,6 +138,7 @@ What it shows:
 - **Schedule view:**
   - Day tabs ("Day 1 · Wednesday 18 November"), a search box (matching talk titles and speaker names) and track filter chips ("All tracks" plus one chip per track).
   - Talks are grouped into time slots: the time on the left, and the talks starting then shown as a responsive grid of cards. Workshops run in parallel with the talks.
+  - Cards have a fixed size (190px tall, at least 240px wide), with the title clamped to 3 lines and the speakers to 1, and the page keeps a stable scrollbar gutter, so the grid doesn't jump when switching days.
   - Show "No talks match your filters." when the filters leave nothing.
 - **Talk card:**
   - The track label in the track's colour, with a badge when the format isn't a regular Talk (Keynote, Workshop).
@@ -148,6 +149,9 @@ What it shows:
   - Talk details: track, format and level; the title; day, time, room and floor; the description; and the speakers as clickable rows that open the speaker.
   - Speaker details: a large avatar, the name, job title, company and country; the bio; and their sessions as clickable rows that open the talk. Filter the full talk list on the client to find them.
 - States: "Loading programme…" while loading. If loading fails, show "Could not load the programme: … Is the backend running?".
+- **Chat:** a floating "💬 Ask the assistant" button in the bottom-right corner opens a 400×600px chat window that overlays the page (full screen at phone width) without moving the layout. Closing it keeps the conversation.
+  - The browser generates the conversation id. The window shows the message history, a hint when empty, a "thinking…" state while waiting, and errors.
+  - It sends `POST /api/chat` with `{ conversationId, message }` and expects `{ reply, toolCalls? }`, where each tool call is `{ name, arguments }` and `arguments` is the JSON string from LangChain4j. Tool calls are shown as small, expandable lines above the answer.
 - Style: a light, warm paper background, white cards with subtle borders and rounded corners, a teal accent, and a system font stack. It must work at phone width.
 
 ### Running locally
@@ -165,14 +169,14 @@ Reset the data with `docker compose down -v`. Never edit a migration that has al
 - **LangChain4j through the Micronaut integration**: `micronaut-langchain4j-anthropic`, with the version managed by the Micronaut parent POM, and a declarative `@AiService` interface.
 - **Model:** Anthropic `claude-haiku-4-5`, temperature `0` (so answers repeat between rehearsal and the live run). The API key comes from the `ANTHROPIC_API_KEY` environment variable and is never committed.
 - **API:** `POST /api/chat` with `{ conversationId, message }` returns the reply as JSON. No streaming: Haiku is fast enough, and it keeps the code simple.
-- **UI:** a chat panel that sits next to the schedule (a collapsible side panel on wide screens). The existing schedule and speaker views stay as they are.
+- **UI:** already built (see **Chat** above). The AI stages are backend-only: don't change the frontend. The backend must match the JSON contract the chat window expects.
 
 ## Stage 1: a chat agent with no tools
 
 The goal is for the audience to see a working, friendly agent that doesn't actually know anything about Bytecode Bay. Asked about the schedule, it either makes up an answer or admits it doesn't know.
 
 - Backend: an `@AiService` with a short system prompt saying it is the assistant for the Bytecode Bay 2026 conference. Add per-conversation chat memory (a message window), so follow-up questions work. **No tools, no access to the database or the repositories, and no conference data in the prompt.**
-- Frontend: the chat panel. Show the message history, a "thinking…" state while waiting, and errors. Generate the conversation id in the browser.
+- Endpoint: `POST /api/chat` returning `{ "reply": "…" }`. Leave out `toolCalls`.
 
 ## Stage 2: give the agent tools
 
@@ -180,7 +184,7 @@ The goal is the same questions, now answered correctly from our database, with t
 
 - Tools are Java methods (`@Tool`) that call the existing repositories. They should cover finding talks (by day, time, track, room or text), getting a talk, finding speakers and getting a speaker. Return compact, structured results.
 - All tools are **read-only**. Don't add any tool, endpoint or table that changes data.
-- Return the tool calls with the reply (tool name and arguments). Show them in the chat as small, expandable lines above the answer.
+- Return the tool calls with the reply as `toolCalls: [{ name, arguments }]`. The chat window already shows them.
 - Log every tool call in the backend application log at `INFO`: the tool name, its arguments and a short summary of the result (for example how many talks were found).
 - System prompt: tell the agent to answer conference questions using the tools.
 

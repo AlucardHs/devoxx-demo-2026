@@ -34,6 +34,11 @@
 
 
   <dependencies>
+    <dependency>
+      <groupId>io.micronaut.langchain4j</groupId>
+      <artifactId>micronaut-langchain4j-anthropic</artifactId>
+      <scope>compile</scope>
+    </dependency>
 
     <dependency>
       <groupId>io.micronaut</groupId>
@@ -186,6 +191,11 @@
           <!-- <useIncrementalCompilation>false</useIncrementalCompilation> -->
 
           <annotationProcessorPaths combine.self="override">
+            <path>
+              <groupId>io.micronaut.langchain4j</groupId>
+              <artifactId>micronaut-langchain4j-processor</artifactId>
+              <version>${micronaut.langchain4j.version}</version>
+            </path>
             <path>
               <groupId>io.micronaut</groupId>
               <artifactId>micronaut-inject-java</artifactId>
