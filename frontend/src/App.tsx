@@ -61,6 +61,13 @@ function App() {
           ))}
       </main>
 
+      {!chatOpen && (
+        <button className="chat-toggle" onClick={() => setChatOpen(true)}>
+          💬 Ask the assistant
+        </button>
+      )}
+      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
+
       {selection && (
         <Modal onClose={() => setSelection(null)}>
           {selection.kind === 'talk' ? (
@@ -70,8 +77,6 @@ function App() {
           )}
         </Modal>
       )}
-
-      <ChatPanel open={chatOpen} onToggle={() => setChatOpen(!chatOpen)} />
     </>
   )
 }

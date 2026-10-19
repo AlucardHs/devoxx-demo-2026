@@ -38,8 +38,14 @@ async function get<T>(path: string): Promise<T> {
 export const fetchTalks = () => get<Talk[]>('/api/talks')
 export const fetchSpeakers = () => get<Speaker[]>('/api/speakers')
 
+export interface ToolCall {
+  name: string
+  arguments: string
+}
+
 export interface ChatResponse {
   reply: string
+  toolCalls?: ToolCall[]
 }
 
 export async function sendChatMessage(conversationId: string, message: string): Promise<ChatResponse> {

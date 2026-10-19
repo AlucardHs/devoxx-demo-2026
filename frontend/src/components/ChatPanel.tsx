@@ -1,32 +1,27 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { sendChatMessage } from '../api'
+import { sendChatMessage, type ToolCall } from '../api'
 
 interface Message {
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'error'
   text: string
+  toolCalls?: ToolCall[]
 }
 
 interface ChatPanelProps {
   open: boolean
-  onToggle: () => void
+  onClose: () => void
 }
 
-const WELCOME: Message = {
-  role: 'assistant',
-  text: 'Hi! I’m the Bytecode Bay 2026 assistant. Ask me anything about the conference.',
-}
-
-export function ChatPanel({ open, onToggle }: ChatPanelProps) {
+export function ChatPanel({ open, onClose }: ChatPanelProps) {
   const [conversationId] = useState(() => crypto.randomUUID())
-  const [messages, setMessages] = useState<Message[]>([WELCOME])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [thinking, setThinking] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const list = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    list.current?.scrollTo({ top: list.current.scrollHeight, behavior: 'smooth' })
-  }, [messages, thinking, open])
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, thinking])
 
   const send = async (event: FormEvent) => {
     event.preventDefault()
@@ -35,49 +30,54 @@ export function ChatPanel({ open, onToggle }: ChatPanelProps) {
 
     setMessages((current) => [...current, { role: 'user', text }])
     setInput('')
-    setError(null)
     setThinking(true)
     try {
-      const { reply } = await sendChatMessage(conversationId, text)
-      setMessages((current) => [...current, { role: 'assistant', text: reply }])
+      const response = await sendChatMessage(conversationId, text)
+      setMessages((current) => [
+        ...current,
+        { role: 'assistant', text: response.reply, toolCalls: response.toolCalls },
+      ])
     } catch (e) {
-      setError((e as Error).message)
+      setMessages((current) => [...current, { role: 'error', text: `Something went wrong: ${(e as Error).message}` }])
     } finally {
       setThinking(false)
     }
   }
 
-  if (!open) {
-    return (
-      <button className="chat-toggle" onClick={onToggle}>
-        💬 Ask the assistant
-      </button>
-    )
-  }
-
   return (
-    <aside className="chat-panel">
+    <aside className="chat-panel" hidden={!open} aria-label="Conference assistant">
       <header className="chat-header">
-        <h3>Conference assistant</h3>
-        <button className="modal-close" onClick={onToggle} aria-label="Close chat">
+        <h2>Ask Bytecode Bay</h2>
+        <button className="chat-close" onClick={onClose} aria-label="Close assistant">
           ×
         </button>
       </header>
-      <div className="chat-messages" ref={list}>
+
+      <div className="chat-messages">
+        {messages.length === 0 && (
+          <p className="chat-hint">Ask anything about the programme, e.g. “Which talks about AI are on day 2?”</p>
+        )}
         {messages.map((message, index) => (
-          <p key={index} className={`chat-message ${message.role}`}>
-            {message.text}
-          </p>
+          <div key={index} className={`chat-message ${message.role}`}>
+            {message.toolCalls?.map((call, callIndex) => (
+              <details key={callIndex} className="tool-call">
+                <summary>🔧 {call.name}</summary>
+                <pre>{call.arguments}</pre>
+              </details>
+            ))}
+            <p>{message.text}</p>
+          </div>
         ))}
-        {thinking && <p className="chat-message assistant">thinking…</p>}
-        {error && <p className="chat-message assistant">Something went wrong: {error}</p>}
+        {thinking && <div className="chat-message assistant thinking">thinking…</div>}
+        <div ref={bottomRef} />
       </div>
+
       <form className="chat-input" onSubmit={send}>
         <input
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask about talks, speakers, rooms…"
-          autoFocus
+          placeholder="Ask a question…"
+          aria-label="Your question"
         />
         <button type="submit" disabled={thinking || !input.trim()}>
           Send
