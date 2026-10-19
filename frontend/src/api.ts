@@ -37,3 +37,19 @@ async function get<T>(path: string): Promise<T> {
 
 export const fetchTalks = () => get<Talk[]>('/api/talks')
 export const fetchSpeakers = () => get<Speaker[]>('/api/speakers')
+
+export interface ChatResponse {
+  reply: string
+}
+
+export async function sendChatMessage(conversationId: string, message: string): Promise<ChatResponse> {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conversationId, message }),
+  })
+  if (!response.ok) {
+    throw new Error(`POST /api/chat failed with ${response.status}`)
+  }
+  return response.json() as Promise<ChatResponse>
+}
