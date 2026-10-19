@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchSpeakers, fetchTalks, type Speaker, type Talk } from './api'
-import { Chat } from './components/Chat'
+import { ChatPanel } from './components/ChatPanel'
 import { Modal } from './components/Modal'
 import { Schedule } from './components/Schedule'
 import { SpeakerDetails } from './components/SpeakerDetails'
@@ -16,7 +16,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('schedule')
   const [selection, setSelection] = useState<Selection>(null)
-  const [chatOpen, setChatOpen] = useState(() => window.matchMedia('(min-width: 901px)').matches)
+  const [chatOpen, setChatOpen] = useState(false)
 
   useEffect(() => {
     Promise.all([fetchTalks(), fetchSpeakers()])
@@ -71,14 +71,8 @@ function App() {
         </Modal>
       )}
 
-      {chatOpen ? (
-        <Chat onClose={() => setChatOpen(false)} />
-      ) : (
-        <button className="chat-toggle" onClick={() => setChatOpen(true)}>
-          Ask the assistant
-        </button>
-      )}
-    </div>
+      <ChatPanel open={chatOpen} onToggle={() => setChatOpen(!chatOpen)} />
+    </>
   )
 }
 
