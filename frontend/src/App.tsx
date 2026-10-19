@@ -31,7 +31,7 @@ function App() {
   const selectSpeaker = (speaker: Speaker) => setSelection({ kind: 'speaker', speaker })
 
   return (
-    <div className={chatOpen ? 'page with-chat' : 'page'}>
+    <>
       <header className="hero">
         <div className="container">
           <p className="eyebrow">18–19 November 2026 · Port Ellis</p>
